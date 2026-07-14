@@ -1,6 +1,50 @@
+@font-face {
+	font-family: "Young Serif";
+	src: url("/assets/fonts/YoungSerif-Regular.ttf") format("truetype");
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Bree Serif";
+	src: url("/assets/fonts/BreeSerif-Regular.ttf") format("truetype");
+	font-display: swap;
+}
+
+[data-font="young-serif"] {
+	font-family: "Young Serif", serif;
+}
+
+[data-font="bree-serif"] {
+	font-family: "Bree Serif", serif;
+}
+
 .counter-shell {
 	display: flex;
 	justify-content: center;
+}
+
+.font-toggle,
+.syntax-theme-toggle {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
+	margin: 1rem 0;
+}
+
+.font-toggle button,
+.syntax-theme-toggle button {
+	border: 1px solid currentColor;
+	border-radius: 999px;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	padding: 0.35rem 0.75rem;
+}
+
+.font-toggle button[aria-pressed="true"],
+.syntax-theme-toggle button[aria-pressed="true"] {
+	background: #111;
+	color: #fff;
 }
 
 .counter-wrap {
@@ -44,10 +88,6 @@
 	width: 80vw;
 	overflow-wrap: anywhere;
 	white-space: normal;
-}
-
-.powered-by span {
-	display: inline-block;
 }
 
 .htmx-logo {

@@ -13,14 +13,58 @@ templ Layout(content templ.Component, config LayoutConfig) {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>{ config.Title }</title>
 			<link rel="stylesheet" href="assets/css/style.css"/>
+			@templ.Raw(codeBlockStyleHTML())
 			<script src="assets/js/htmx4beta.min.js"></script>
 			@animationCounter()
 		</head>
-		<body>
+		<body data-syntax-theme="tokyonight-night" data-font="young-serif">
+			@fontToggle()
+			@syntaxThemeToggle()
 			@PersistCounter(config.COUNT, false)
 			@content
 		</body>
 	</html>
+}
+
+templ fontToggle() {
+	<div class="font-toggle" aria-label="Site font">
+		<button type="button" data-font-option="young-serif">Young Serif</button>
+		<button type="button" data-font-option="bree-serif">Bree Serif</button>
+	</div>
+	<script>
+		const fontButtons = document.querySelectorAll('[data-font-option]');
+		function setFont(font) {
+			document.body.dataset.font = font;
+			for (const button of fontButtons) {
+				button.setAttribute('aria-pressed', button.dataset.fontOption === font);
+			}
+		}
+		for (const button of fontButtons) {
+			button.addEventListener('click', () => setFont(button.dataset.fontOption));
+		}
+		setFont(document.body.dataset.font);
+	</script>
+}
+
+templ syntaxThemeToggle() {
+	<div class="syntax-theme-toggle" aria-label="Syntax highlighting theme">
+		<button type="button" data-syntax-theme-option="tokyonight-night">tokyonight</button>
+		<button type="button" data-syntax-theme-option="github-dark">github</button>
+		<button type="button" data-syntax-theme-option="modus-vivendi">modus</button>
+	</div>
+	<script>
+		const syntaxThemeButtons = document.querySelectorAll('[data-syntax-theme-option]');
+		function setSyntaxTheme(theme) {
+			document.body.dataset.syntaxTheme = theme;
+			for (const button of syntaxThemeButtons) {
+				button.setAttribute('aria-pressed', button.dataset.syntaxThemeOption === theme);
+			}
+		}
+		for (const button of syntaxThemeButtons) {
+			button.addEventListener('click', () => setSyntaxTheme(button.dataset.syntaxThemeOption));
+		}
+		setSyntaxTheme(document.body.dataset.syntaxTheme);
+	</script>
 }
 
 templ animationCounter() {
@@ -33,13 +77,13 @@ templ animationCounter() {
 
 			if (wrap.classList.contains('overclicked')) {
 				poweredBy.classList.remove('spinning');
+				const isAlreadyChangingColor = wrap.style.color && wrap.style.color !== 'rgb(255, 0, 0)';
+				const previousHeight = isAlreadyChangingColor ? 0 : poweredByText.offsetHeight;
 				poweredByText.textContent += 'eee';
 
-				const textStyle = getComputedStyle(poweredByText);
-				const lineHeight = parseFloat(textStyle.lineHeight) || parseFloat(textStyle.fontSize) * 1.2;
-				const isWrapped = poweredByText.offsetHeight > lineHeight;
+				const shouldChangeColor = isAlreadyChangingColor || poweredByText.offsetHeight > previousHeight;
 
-				if (isWrapped) {
+				if (shouldChangeColor) {
 					const r = Math.floor(Math.random() * 256);
 					const g = Math.floor(Math.random() * 256);
 					const b = Math.floor(Math.random() * 256);
@@ -96,6 +140,7 @@ templ PersistCounter(count int, poweredByHTMX bool) {
 	</div>
 }
 
-templ HomePage() {
+templ HomePage(markdownHTML string) {
 	<h1>hello world</h1>
+	@templ.Raw(markdownHTML)
 }

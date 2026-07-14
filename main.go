@@ -7,12 +7,15 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
+	"github.com/gomarkdown/markdown"
 	"github.com/ninesl/portfolio-site/pages"
 )
 
 var (
 	//go:embed assets
 	embeddedFiles embed.FS
+	//go:embed blog
+	embeddedBlog embed.FS
 
 	assetHandler http.Handler
 
@@ -40,7 +43,17 @@ func addMiddleware(next http.Handler) http.Handler {
 	return logging(next)
 }
 
+func renderBlogPost() string {
+	md, err := embeddedBlog.ReadFile("blog/SetupPodmanEnabledPrivateVPSToHostSideProjects.md")
+	if err != nil {
+		log.Fatal(err)
+	}
+	renderer := newCustomizedRender()
+	return string(markdown.ToHTML(md, nil, renderer))
+}
+
 func main() {
+	blogHTML := renderBlogPost()
 
 	mux := http.NewServeMux()
 
@@ -51,7 +64,7 @@ func main() {
 			http.NotFound(w, r)
 			return
 		}
-		renderComponent(pages.Layout(pages.HomePage(), *pageConfig), w, r)
+		renderComponent(pages.Layout(pages.HomePage(blogHTML), *pageConfig), w, r)
 	})
 	mux.HandleFunc("POST /count", func(w http.ResponseWriter, r *http.Request) {
 		pageConfig.COUNT++
