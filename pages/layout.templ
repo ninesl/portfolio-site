@@ -1,0 +1,101 @@
+package pages
+
+type LayoutConfig struct {
+	Title string
+	COUNT int
+}
+
+templ Layout(content templ.Component, config LayoutConfig) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ config.Title }</title>
+			<link rel="stylesheet" href="assets/css/style.css"/>
+			<script src="assets/js/htmx4beta.min.js"></script>
+			@animationCounter()
+		</head>
+		<body>
+			@PersistCounter(config.COUNT, false)
+			@content
+		</body>
+	</html>
+}
+
+templ animationCounter() {
+	<script>
+		function animationCounter(button) {
+			const wrap = button.closest('.counter-wrap');
+			const poweredBy = document.querySelector('#poweredBy');
+			const poweredByText = poweredBy.querySelector('span');
+			poweredBy.classList.toggle('reverse-spin');
+
+			if (wrap.classList.contains('overclicked')) {
+				poweredBy.classList.remove('spinning');
+				poweredByText.textContent += 'eee';
+
+				const textStyle = getComputedStyle(poweredByText);
+				const lineHeight = parseFloat(textStyle.lineHeight) || parseFloat(textStyle.fontSize) * 1.2;
+				const isWrapped = poweredByText.offsetHeight > lineHeight;
+
+				if (isWrapped) {
+					const r = Math.floor(Math.random() * 256);
+					const g = Math.floor(Math.random() * 256);
+					const b = Math.floor(Math.random() * 256);
+					wrap.style.color = `rgb(${r}, ${g}, ${b})`;
+				}
+
+				// resets the animation
+				requestAnimationFrame(() => poweredBy.classList.add('spinning'));
+				return;
+			}
+
+			if (wrap.classList.contains('spinning')) {
+				wrap.classList.add('overclicked');
+				poweredByText.textContent = 'weeeeeeeeee';
+				poweredBy.classList.remove('spinning');
+				// resets the animation
+				requestAnimationFrame(() => poweredBy.classList.add('spinning'));
+				return;
+			}
+
+			if (wrap.classList.contains('locked')) return;
+
+			wrap.classList.add('spinning', 'locked');
+			button.setAttribute('aria-disabled', 'true');
+			poweredBy.classList.add('spinning');
+		}
+	</script>
+}
+
+templ PersistCounter(count int, poweredByHTMX bool) {
+	<div class="counter-shell">
+		<div class="counter-wrap">
+			<button
+				class="counter-button"
+				hx-post="/count"
+				hx-trigger="animationend from:#poweredBy"
+				hx-swap="outerHTML"
+				hx-target=".counter-shell"
+				hx-on:click="animationCounter(this)"
+			>
+				<h1>{ count }</h1>
+				<div id="poweredBy" class="powered-by">
+					if poweredByHTMX {
+						<span>powered by</span>
+						<span class="htmx-logo" aria-label="HTMX logo" role="img">
+							<img src="/assets/img/Htmx_Logo.png" alt=""/>
+						</span>
+					} else {
+						<span>click me</span>
+					}
+				</div>
+			</button>
+		</div>
+	</div>
+}
+
+templ HomePage() {
+	<h1>hello world</h1>
+}
