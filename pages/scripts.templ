@@ -1,0 +1,98 @@
+package pages
+
+templ fontToggle() {
+	<div class="font-toggle" aria-label="Site font">
+		<button type="button" data-font-option="young-serif">Young Serif</button>
+		<button type="button" data-font-option="bree-serif">Bree Serif</button>
+		<button type="button" data-font-option="">Default</button>
+	</div>
+	<script>
+		const fontButtons = document.querySelectorAll('[data-font-option]');
+		function setFont(font) {
+			if (font) {
+				document.body.dataset.font = font;
+			} else {
+				delete document.body.dataset.font;
+			}
+			for (const button of fontButtons) {
+				button.setAttribute('aria-pressed', button.dataset.fontOption === font);
+			}
+		}
+		for (const button of fontButtons) {
+			button.addEventListener('click', () => setFont(button.dataset.fontOption));
+		}
+		setFont(document.body.dataset.font);
+	</script>
+}
+
+templ syntaxThemeToggle() {
+	<div class="syntax-theme-toggle" aria-label="Syntax highlighting theme">
+		<button type="button" data-syntax-theme-option="tokyonight-night">tokyonight</button>
+		<button type="button" data-syntax-theme-option="github-dark">github</button>
+		<button type="button" data-syntax-theme-option="modus-vivendi">modus</button>
+	</div>
+	<script>
+		const syntaxThemeButtons = document.querySelectorAll('[data-syntax-theme-option]');
+		function setSyntaxTheme(theme) {
+			document.body.dataset.syntaxTheme = theme;
+			for (const button of syntaxThemeButtons) {
+				button.setAttribute('aria-pressed', button.dataset.syntaxThemeOption === theme);
+			}
+		}
+		for (const button of syntaxThemeButtons) {
+			button.addEventListener('click', () => setSyntaxTheme(button.dataset.syntaxThemeOption));
+		}
+		setSyntaxTheme(document.body.dataset.syntaxTheme);
+	</script>
+}
+
+// the animationend event emit is listened to by PersitCounter
+//
+// starts spinning when clicked
+// turns red when clicked if 'spinning' adds 'overclicked' , still restarts anim
+// next click on overclick turn text to 'weeeee' and add 'eee' for preceding clicks
+// when the appended 'eee's wrap to a new line, color set to a random color not red
+templ animationCounter() {
+	<script>
+		function animationCounter(button) {
+			const wrap = button.closest('.counter-wrap');
+			const poweredBy = document.querySelector('#poweredBy');
+			const poweredByText = poweredBy.querySelector('span');
+			poweredBy.classList.toggle('reverse-spin');
+
+			if (wrap.classList.contains('overclicked')) {
+				poweredBy.classList.remove('spinning');
+				const isAlreadyChangingColor = wrap.style.color && wrap.style.color !== 'rgb(255, 0, 0)';
+				const previousHeight = isAlreadyChangingColor ? 0 : poweredByText.offsetHeight;
+				poweredByText.textContent += 'eee';
+
+				const shouldChangeColor = isAlreadyChangingColor || poweredByText.offsetHeight > previousHeight;
+
+				if (shouldChangeColor) {
+					const r = Math.floor(Math.random() * 256);
+					const g = Math.floor(Math.random() * 256);
+					const b = Math.floor(Math.random() * 256);
+					wrap.style.color = `rgb(${r}, ${g}, ${b})`;
+				}
+
+				// resets the animation
+				requestAnimationFrame(() => poweredBy.classList.add('spinning'));
+				return;
+			}
+
+			if (wrap.classList.contains('spinning')) {
+				wrap.classList.add('overclicked');
+				wrap.style.color = 'rgb(255, 0, 0)';
+				poweredByText.textContent = 'weeeeeeeeee';
+				poweredBy.classList.remove('spinning');
+				// resets the animation
+				requestAnimationFrame(() => poweredBy.classList.add('spinning'));
+				return;
+			}
+
+			wrap.classList.add('spinning');
+			button.setAttribute('aria-disabled', 'true');
+			poweredBy.classList.add('spinning');
+		}
+	</script>
+}
