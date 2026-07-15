@@ -22,7 +22,6 @@ FROM alpine:latest AS launcher
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /usr/local/bin/ninescoding /usr/local/bin/ninescoding
-:L:w
 
 WORKDIR /
 EXPOSE 8080
