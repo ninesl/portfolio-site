@@ -18,6 +18,8 @@ func codeBlockCSS() string {
 	themeNames := []string{"tokyonight-night", "github-dark", "modus-vivendi"}
 
 	var buf bytes.Buffer
+	buf.WriteString(`@font-face{font-family:"Code New Roman";src:url("/assets/fonts/Code%20New%20Roman.otf") format("opentype");font-display:swap}`)
+	buf.WriteString(`[data-code-font="code-new-roman"] .chroma,[data-code-font="code-new-roman"] .chroma code{font-family:"Code New Roman",monospace}`)
 	for _, styleName := range themeNames {
 		style := styles.Get(styleName)
 		if style == nil {

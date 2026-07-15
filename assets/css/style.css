@@ -24,6 +24,7 @@
 }
 
 .font-toggle,
+.code-font-toggle,
 .syntax-theme-toggle {
 	display: flex;
 	gap: 0.5rem;
@@ -32,6 +33,7 @@
 }
 
 .font-toggle button,
+.code-font-toggle button,
 .syntax-theme-toggle button {
 	border: 1px solid currentColor;
 	border-radius: 999px;
@@ -42,6 +44,7 @@
 }
 
 .font-toggle button[aria-pressed="true"],
+.code-font-toggle button[aria-pressed="true"],
 .syntax-theme-toggle button[aria-pressed="true"] {
 	background: #111;
 	color: #fff;

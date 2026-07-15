@@ -18,8 +18,9 @@ templ Layout(content templ.Component, config LayoutConfig) {
 			@animationCounter()
 		</head>
 		// TODO: keep theme in request context somehow
-		<body data-syntax-theme="tokyonight-night" data-font="">
+		<body data-syntax-theme="tokyonight-night" data-font="" data-code-font="code-new-roman">
 			@fontToggle()
+			@codeFontToggle()
 			@syntaxThemeToggle()
 			@PersistCounter(config.COUNT, false)
 			@content

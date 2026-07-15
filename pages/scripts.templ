@@ -46,6 +46,30 @@ templ syntaxThemeToggle() {
 	</script>
 }
 
+templ codeFontToggle() {
+	<div class="code-font-toggle" aria-label="Code font">
+		<button type="button" data-code-font-option="code-new-roman">Code New Roman</button>
+		<button type="button" data-code-font-option="">Default</button>
+	</div>
+	<script>
+		const codeFontButtons = document.querySelectorAll('[data-code-font-option]');
+		function setCodeFont(font) {
+			if (font) {
+				document.body.dataset.codeFont = font;
+			} else {
+				delete document.body.dataset.codeFont;
+			}
+			for (const button of codeFontButtons) {
+				button.setAttribute('aria-pressed', button.dataset.codeFontOption === font);
+			}
+		}
+		for (const button of codeFontButtons) {
+			button.addEventListener('click', () => setCodeFont(button.dataset.codeFontOption));
+		}
+		setCodeFont(document.body.dataset.codeFont);
+	</script>
+}
+
 // the animationend event emit is listened to by PersitCounter
 //
 // starts spinning when clicked
