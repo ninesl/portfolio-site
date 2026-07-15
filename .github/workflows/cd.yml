@@ -1,0 +1,58 @@
+name: Deploy full site 
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  image:
+    runs-on: ubuntu-26.04
+    environment: production
+
+    env:
+      IMAGE_REPO: ${{ secrets.REGISTRY_URL }}/${{ vars.APP_NAME }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Generate image tag
+        id: tag
+        run: |
+          DATE="$(date -u +'%Y%m%d-%H%M%S')"
+          IMAGE_TAGGED="${IMAGE_REPO}:${DATE}"
+
+          echo "image_tagged=${IMAGE_TAGGED}" >> "$GITHUB_OUTPUT"
+
+      - name: Podman install
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+
+      - name: Registry login
+        run: |
+          printf '%s' "${{ secrets.ROBOT_TOKEN }}" | podman login "${{ secrets.REGISTRY_URL }}" \
+            -u "${{ secrets.ROBOT_USER }}" \
+            --password-stdin
+
+      - name: Build image
+        run: podman build -f Dockerfile -t "${{ steps.tag.outputs.image_tagged }}" .
+
+      - name: Push image
+        run: podman push "${{ steps.tag.outputs.image_tagged }}"
+
+      - name: Pull and deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          port: ${{ secrets.PROD_PORT }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.ROBOT_SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd prod/${{ vars.APP_NAME }}
+            podman pull "${{ steps.tag.outputs.image_tagged }}"
+            APP_IMAGE="${{ steps.tag.outputs.image_tagged }}" \
+              podman compose -f podman-compose.prod.yml up -d --remove-orphans
+            podman container prune -f
+            podman image prune -f

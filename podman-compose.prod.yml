@@ -1,0 +1,12 @@
+services:
+  ninescoding:
+    image: ${APP_IMAGE}
+    container_name: ninescoding
+    restart: unless-stopped
+    network_mode: bridge # eventually for telemetry?
+    ports:
+      - "127.0.0.1:9999:8080"
+    environment:
+      - PORT=8080
+    volumes:
+      - ./blog:/blog

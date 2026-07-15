@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/gomarkdown/markdown"
+	"github.com/joho/godotenv"
 	"github.com/ninesl/portfolio-site/pages"
 )
 
@@ -86,9 +88,25 @@ func serveAsset(w http.ResponseWriter, r *http.Request) {
 	assetHandler.ServeHTTP(w, r)
 }
 
-const PORT = 8080
+func getPort() int {
+	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
+		log.Fatal(err)
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("PORT is required")
+	}
+
+	parsedPort, err := strconv.Atoi(port)
+	if err != nil {
+		log.Fatalf("invalid PORT %q: %v", port, err)
+	}
+	return parsedPort
+}
 
 func main() {
+	port := getPort()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /assets/{path...}", serveAsset)
@@ -107,6 +125,6 @@ func main() {
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		renderComponent(pages.Layout(pages.BlogHome(getBlogTitleNames()), *pageConfig), w, r)
 	})
-	log.Println("listening on ", PORT)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", PORT), addMiddleware(mux)))
+	log.Println("listening on ", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), addMiddleware(mux)))
 }
