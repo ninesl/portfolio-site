@@ -86,6 +86,10 @@ func main() {
 			http.NotFound(w, r)
 			return
 		}
+		if r.Header.Get("HX-Request") == "true" {
+			renderComponent(c, w, r)
+			return
+		}
 		renderComponent(pages.Layout(c, *pageConfig), w, r)
 	})
 	mux.HandleFunc("POST /count", func(w http.ResponseWriter, r *http.Request) {

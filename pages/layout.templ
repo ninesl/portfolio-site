@@ -19,11 +19,15 @@ templ Layout(content templ.Component, config LayoutConfig) {
 		</head>
 		// TODO: keep theme in request context somehow
 		<body data-syntax-theme="tokyonight-night" data-font="" data-code-font="code-new-roman">
-			@fontToggle()
-			@codeFontToggle()
-			@syntaxThemeToggle()
-			@PersistCounter(config.COUNT, false)
-			@content
+			<header>
+				@fontToggle()
+				@codeFontToggle()
+				@syntaxThemeToggle()
+				@PersistCounter(config.COUNT, false)
+			</header>
+			<main>
+				@content
+			</main>
 		</body>
 	</html>
 }
@@ -32,7 +36,13 @@ templ BlogHome(articles []string) {
 	<ul>
 		for _, article := range articles {
 			<li>
-				<a href={ "/blog/" + article }>{ article }</a>
+				<a
+					href={ "/blog/" + article }
+					hx-get={ "/blog/" + article }
+					hx-target="main"
+					hx-swap="innerHTML"
+					hx-push-url="true"
+				>{ article }</a>
 			</li>
 		}
 	</ul>
