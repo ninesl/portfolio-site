@@ -7,12 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/a-h/templ"
-	"github.com/gomarkdown/markdown"
 	"github.com/joho/godotenv"
 	"github.com/ninesl/portfolio-site/pages"
 )
@@ -23,9 +20,6 @@ var (
 
 	////go:embed blog
 	//embeddedBlog embed.FS
-
-	blogFiles fs.FS = os.DirFS("./blog/")
-
 	assetHandler http.Handler
 
 	pageConfig = &pages.LayoutConfig{
@@ -50,31 +44,6 @@ func logging(next http.Handler) http.Handler {
 
 func addMiddleware(next http.Handler) http.Handler {
 	return logging(next)
-}
-
-func getBlogTitleNames() []string {
-	blogEntries, err := fs.ReadDir(blogFiles, ".")
-	if err != nil {
-		log.Fatal(err)
-	}
-	blogTitles := make([]string, 0, len(blogEntries))
-	for _, entry := range blogEntries {
-		if entry.IsDir() || filepath.Ext(entry.Name()) != ".md" {
-			continue
-		}
-		blogTitles = append(blogTitles, strings.TrimSuffix(entry.Name(), ".md"))
-	}
-	return blogTitles
-}
-
-func convertMDToHTML(blogPath string) (string, error) {
-	mdBytes, err := fs.ReadFile(blogFiles, blogPath+".md")
-	if err != nil {
-		return "", err
-	}
-
-	renderer := newCustomizedRender()
-	return string(markdown.ToHTML(mdBytes, nil, renderer)), nil
 }
 
 func renderComponent(comp templ.Component, w http.ResponseWriter, r *http.Request) {
@@ -106,24 +75,25 @@ func getPort() int {
 }
 
 func main() {
+	blog := initBlog("./blog/")
 	port := getPort()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /assets/{path...}", serveAsset)
 	mux.HandleFunc("GET /blog/{article}", func(w http.ResponseWriter, r *http.Request) {
-		blogHTML, err := convertMDToHTML(r.PathValue("article"))
+		c, err := blog.ArticleHTML(r.PathValue("article"))
 		if err != nil {
 			http.NotFound(w, r)
 			return
 		}
-		renderComponent(pages.Layout(pages.MarkdownHTML(blogHTML), *pageConfig), w, r)
+		renderComponent(pages.Layout(c, *pageConfig), w, r)
 	})
 	mux.HandleFunc("POST /count", func(w http.ResponseWriter, r *http.Request) {
 		pageConfig.COUNT++
 		renderComponent(pages.PersistCounter(pageConfig.COUNT, true), w, r)
 	})
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		renderComponent(pages.Layout(pages.BlogHome(getBlogTitleNames()), *pageConfig), w, r)
+		renderComponent(pages.Layout(pages.BlogHome(blog.ArticleTitles()), *pageConfig), w, r)
 	})
 	log.Println("listening on ", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), addMiddleware(mux)))
