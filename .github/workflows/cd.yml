@@ -29,6 +29,9 @@ jobs:
           path: blog
           persist-credentials: false
 
+      - name: Remove Git metadata
+        run: rm -rf .git blog/.git
+
       - name: Build, publish, and deploy
         env:
           DEPLOY_VALUES: APP_IMAGE=${{ env.DEPLOY_IMAGE }}
