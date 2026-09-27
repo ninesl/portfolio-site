@@ -25,11 +25,6 @@ jobs:
       - name: Remove Git metadata
         run: rm -rf .git
 
-      - name: Checkout articles if missing on host
-        run: |
-          ssh -i "$HOME/secrets/ssh_key" -o UserKnownHostsFile="$HOME/secrets/known_hosts" -p 1337 debian@host.containers.internal \
-            'test -d ~/prod/ninescoding/articles/.git || git clone https://github.com/ninesl/articles.git ~/prod/ninescoding/articles'
-
       - name: Build, publish, and deploy
         env:
           DEPLOY_VALUES: APP_IMAGE=${{ env.DEPLOY_IMAGE }}
