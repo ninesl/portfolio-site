@@ -30,11 +30,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set article modification times from Git history
+      - name: Set article modification times from Git addition dates
         working-directory: blog
         run: |
           git ls-files -z '*.md' | while IFS= read -r -d '' file; do
-            timestamp=$(git log -1 --format=%ct -- "$file")
+            read -r timestamp < <(git log --reverse --diff-filter=A --format=%ct -- "$file")
             touch -d "@$timestamp" -- "$file"
           done
 
