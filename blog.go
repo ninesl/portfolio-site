@@ -131,7 +131,7 @@ func (b *Blog) readEntries(blogFS fs.FS, dir, parent string) ([]pages.BlogEntry,
 	items := make([]datedEntry, 0, len(blogEntries))
 	for _, entry := range blogEntries {
 		name := entry.Name()
-		if name == ".git" {
+		if name == ".git" || name == ".github" {
 			continue
 		}
 		if entry.IsDir() {
