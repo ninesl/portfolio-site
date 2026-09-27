@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -194,19 +193,24 @@ func (b *Blog) readEntries(blogFS fs.FS, dir, parent string) ([]pages.BlogEntry,
 	return entries, nil
 }
 
-// Git doesn't track filesystem modification times. Use the first commit that
-// added the file, falling back to its mtime for articles outside a Git checkout.
+// Git doesn't track filesystem modification times. Follow renames back to the
+// original commit and retain the author's timezone so late-night posts keep
+// their original calendar day. Fall back to mtime outside a Git checkout.
 func gitAdditionDate(gitRoot, filename string) (time.Time, bool) {
-	output, err := exec.Command("git", "-C", gitRoot, "log", "--reverse", "--diff-filter=A", "--format=%ct", "--", filename).Output()
+	output, err := exec.Command("git", "-C", gitRoot, "log", "--follow", "--format=%aI", "--", filename).Output()
 	if err != nil {
 		return time.Time{}, false
 	}
-	first, _, _ := strings.Cut(strings.TrimSpace(string(output)), "\n")
-	seconds, err := strconv.ParseInt(first, 10, 64)
+	dates := strings.TrimSpace(string(output))
+	last := dates
+	if i := strings.LastIndexByte(dates, '\n'); i >= 0 {
+		last = dates[i+1:]
+	}
+	date, err := time.Parse(time.RFC3339, last)
 	if err != nil {
 		return time.Time{}, false
 	}
-	return time.Unix(seconds, 0), true
+	return date, true
 }
 
 func convertMDToHTML(blogFS fs.FS, blogName string, date time.Time) (templ.Component, error) {
