@@ -23,7 +23,7 @@ templ Layout(content templ.Component, config LayoutConfig, currentPath string) {
 		<body>
 			<header>
 				if currentPath != "/" {
-					<a id="home-link" href="/" hx-boost="true" hx-preload="mouseover" hx-push-url="/" hx-on:click="this.remove()">back to Nines Coding</a>
+					@homeLink()
 				}
 				<div class="header-profile">
 					<div>Lance Nines</div>
@@ -44,8 +44,12 @@ templ Layout(content templ.Component, config LayoutConfig, currentPath string) {
 templ BlogArticleFragment(content templ.Component) {
 	@content
 	<hx-partial hx-target="header" hx-swap="afterbegin">
-		<a id="home-link" href="/" hx-boost="true" hx-preload="mouseover" hx-push-url="/" hx-on:click="this.remove()">back to Nines Coding</a>
+		@homeLink()
 	</hx-partial>
+}
+
+templ homeLink() {
+	<a id="home-link" href="/" hx-get="/" hx-preload="mouseover" hx-target="main" hx-swap="innerHTML" hx-push-url="/">back to Nines Coding</a>
 }
 
 type BlogEntry struct {
@@ -65,6 +69,11 @@ templ NotFound() {
 
 templ BlogHome(entries []BlogEntry) {
 	@blogEntries(entries)
+}
+
+templ BlogHomeFragment(entries []BlogEntry) {
+	@BlogHome(entries)
+	<hx-partial hx-target="#home-link" hx-swap="delete"></hx-partial>
 }
 
 templ blogEntries(entries []BlogEntry) {

@@ -97,6 +97,10 @@ func main() {
 		renderComponent(pages.PersistCounter(pageConfig.COUNT, true), w, r)
 	})
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("HX-Request") == "true" {
+			renderComponent(pages.BlogHomeFragment(blog.Entries()), w, r)
+			return
+		}
 		renderComponent(pages.Layout(pages.BlogHome(blog.Entries()), *pageConfig, r.URL.Path), w, r)
 	})
 	mux.HandleFunc("GET /", renderNotFound)
