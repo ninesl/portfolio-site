@@ -6,11 +6,20 @@ header {
 	min-height: 5rem;
 }
 
+header #home-link {
+	grid-column: 1;
+	grid-row: 1;
+}
+
 .header-profile {
+	grid-column: 2;
+	grid-row: 1;
 	text-align: center;
 }
 
 .counter-shell {
+	grid-column: 3;
+	grid-row: 1;
 	justify-self: end;
 }
 
@@ -23,6 +32,10 @@ header {
 		grid-column: 1 / -1;
 		grid-row: 2;
 	}
+
+	.counter-shell {
+		grid-column: 2;
+	}
 }
 
 main > h1:first-child {
@@ -31,11 +44,6 @@ main > h1:first-child {
 
 .article-date {
 	margin-top: 0.25rem;
-}
-
-.counter-shell {
-	display: flex;
-	justify-content: flex-end;
 }
 
 .counter-wrap {
