@@ -23,7 +23,6 @@ FROM alpine:latest AS launcher
 RUN apk add --no-cache ca-certificates git
 
 COPY --from=builder /usr/local/bin/ninescoding /usr/local/bin/ninescoding
-COPY --from=builder /app/blog /blog
 
 WORKDIR /
 EXPOSE 8080

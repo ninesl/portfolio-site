@@ -14,7 +14,7 @@ import (
 	"github.com/ninesl/portfolio-site/pages"
 )
 
-const blogPath = "./blog/"
+const blogPath = "./articles/"
 
 var (
 	//go:embed assets

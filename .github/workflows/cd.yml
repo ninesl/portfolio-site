@@ -22,16 +22,13 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Checkout articles
-        uses: actions/checkout@v5
-        with:
-          repository: ninesl/articles
-          path: blog
-          fetch-depth: 0
-          persist-credentials: false
-
       - name: Remove Git metadata
         run: rm -rf .git
+
+      - name: Checkout articles if missing on host
+        run: |
+          ssh -i "$HOME/secrets/ssh_key" -o UserKnownHostsFile="$HOME/secrets/known_hosts" -p 1337 debian@host.containers.internal \
+            'test -d ~/prod/ninescoding/articles/.git || git clone https://github.com/ninesl/articles.git ~/prod/ninescoding/articles'
 
       - name: Build, publish, and deploy
         env:

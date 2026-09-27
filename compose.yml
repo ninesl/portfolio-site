@@ -4,6 +4,8 @@ services:
     container_name: ninescoding
     environment:
       PORT: "8080"
+    volumes:
+      - ./articles:/articles:ro
     ports:
       - "127.0.0.1:9999:8080"
     restart: unless-stopped
