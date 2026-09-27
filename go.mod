@@ -1,6 +1,6 @@
 module github.com/ninesl/portfolio-site
 
-go 1.26.4
+go 1.27.1
 
 tool (
 	github.com/a-h/templ/cmd/templ
@@ -10,9 +10,9 @@ tool (
 
 require (
 	github.com/a-h/templ v0.3.1020
-	github.com/alecthomas/chroma v0.10.0
 	github.com/alecthomas/chroma/v2 v2.27.0
-	github.com/gomarkdown/markdown v0.0.0-20260614204949-e08cff860f76
+	github.com/gomarkdown/markdown v0.0.0-20260923180740-94fc73f6b1a3
+	github.com/joho/godotenv v1.5.1
 )
 
 require (
@@ -24,14 +24,12 @@ require (
 	github.com/bep/golibsass v1.2.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cli/browser v1.3.0 // indirect
-	github.com/dlclark/regexp2 v1.12.0 // indirect
-	github.com/dlclark/regexp2/v2 v2.5.0 // indirect
+	github.com/dlclark/regexp2/v2 v2.8.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gohugoio/hugo v0.149.1 // indirect
 	github.com/gomarkdown/mdtohtml v0.0.0-20240124153210-d773061d1585 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/natefinch/atomic v1.0.1 // indirect

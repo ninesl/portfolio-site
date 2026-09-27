@@ -1,11 +1,13 @@
 package pages
 
+import "strings"
+
 type LayoutConfig struct {
 	Title string
 	COUNT int
 }
 
-templ Layout(content templ.Component, config LayoutConfig) {
+templ Layout(content templ.Component, config LayoutConfig, currentPath string) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -14,15 +16,13 @@ templ Layout(content templ.Component, config LayoutConfig) {
 			<title>{ config.Title }</title>
 			<link rel="stylesheet" href="/assets/css/style.css"/>
 			@templ.Raw(codeBlockStyleHTML())
-			<script src="/assets/js/htmx4beta.min.js"></script>
+			<script src="/assets/js/htmx.4.0.0.js"></script>
+			<script src="/assets/js/hx-preload.js"></script>
 			@animationCounter()
 		</head>
-		// TODO: keep theme in request context somehow
-		<body data-syntax-theme="tokyonight-night" data-font="" data-code-font="code-new-roman">
+		<body>
 			<header>
-				@fontToggle()
-				@codeFontToggle()
-				@syntaxThemeToggle()
+				@headerHomeLink(currentPath)
 				@PersistCounter(config.COUNT, false)
 			</header>
 			<main>
@@ -32,17 +32,56 @@ templ Layout(content templ.Component, config LayoutConfig) {
 	</html>
 }
 
-templ BlogHome(articles []string) {
+templ headerHomeLink(currentPath string) {
+	<a id="home-link" href="/" hx-boost="true" hx-preload="mouseover" hx-push-url="/">
+		if currentPath != "/" {
+			back to
+		}
+		Nines Coding
+	</a>
+}
+
+templ BlogArticleFragment(content templ.Component) {
+	@content
+	<hx-partial hx-target="#home-link" hx-swap="afterbegin">{ "back to " }</hx-partial>
+}
+
+type BlogEntry struct {
+	Title string
+	Path string
+	Folder bool
+	Children []BlogEntry
+}
+
+func ArticleSlug(title string) string {
+	return strings.ReplaceAll(title, " ", "")
+}
+
+templ NotFound() {
+	<p>this content aint here or you're lost</p>
+}
+
+templ BlogHome(entries []BlogEntry) {
+	@blogEntries(entries)
+}
+
+templ blogEntries(entries []BlogEntry) {
 	<ul>
-		for _, article := range articles {
+		for _, entry := range entries {
 			<li>
-				<a
-					href={ "/blog/" + article }
-					hx-get={ "/blog/" + article }
-					hx-target="main"
-					hx-swap="innerHTML"
-					hx-push-url="true"
-				>{ article }</a>
+				if entry.Folder {
+					{ entry.Title }
+					@blogEntries(entry.Children)
+				} else {
+					<a
+						href={ "/blog/" + entry.Path }
+						hx-get={ "/blog/" + entry.Path }
+						hx-preload="mouseover"
+						hx-target="main"
+						hx-swap="innerHTML"
+						hx-push-url={ ArticleSlug(entry.Title) }
+					>{ entry.Title }</a>
+				}
 			</li>
 		}
 	</ul>
@@ -59,7 +98,10 @@ templ PersistCounter(count int, poweredByHTMX bool) {
 				hx-target=".counter-shell"
 				hx-on:click="animationCounter(this)"
 			>
-				<h1>{ count }</h1>
+				<div class="counter-total">
+					<span>lifetime clicks</span>
+					<h1>{ count }</h1>
+				</div>
 				<div id="poweredBy" class="powered-by">
 					if poweredByHTMX {
 						<span>powered by</span>

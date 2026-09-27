@@ -3,7 +3,6 @@ package pages
 import (
 	"bytes"
 	"fmt"
-	"strings"
 
 	"github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/styles"
@@ -15,22 +14,17 @@ func codeBlockCSS() string {
 		panic("couldn't create html formatter")
 	}
 
-	themeNames := []string{"tokyonight-night", "github-dark", "modus-vivendi"}
-
+	settings := DefaultSettings
 	var buf bytes.Buffer
-	buf.WriteString(`@font-face{font-family:"Code New Roman";src:url("/assets/fonts/Code%20New%20Roman.otf") format("opentype");font-display:swap}`)
-	buf.WriteString(`[data-code-font="code-new-roman"] .chroma,[data-code-font="code-new-roman"] .chroma code{font-family:"Code New Roman",monospace}`)
-	for _, styleName := range themeNames {
-		style := styles.Get(styleName)
-		if style == nil {
-			panic(fmt.Sprintf("didn't find style '%s'", styleName))
-		}
-
-		var themeCSS bytes.Buffer
-		if err := formatter.WriteCSS(&themeCSS, style); err != nil {
-			panic(err)
-		}
-		buf.WriteString(strings.ReplaceAll(themeCSS.String(), ".chroma", `[data-syntax-theme="`+styleName+`"] .chroma`))
+	fmt.Fprintf(&buf, `@font-face{font-family:%q;src:url(%q) format("truetype");font-display:swap}body{font-family:%q,sans-serif}`, settings.TextFont, settings.TextFontURL, settings.TextFont)
+	fmt.Fprintf(&buf, `@font-face{font-family:%q;src:url(%q) format("opentype");font-display:swap}.chroma,code{font-family:%q,monospace}`, settings.CodeFont, settings.CodeFontURL, settings.CodeFont)
+	buf.WriteString(`pre.chroma{max-width:100%;padding:1rem 1.125rem;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:.6rem;box-sizing:border-box;box-shadow:0 .3rem 1rem #0002;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2;line-height:1.5}code.chroma{padding:.12em .35em;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:.3em;box-decoration-break:clone;-webkit-box-decoration-break:clone;overflow-wrap:anywhere;font-size:.9em}pre.chroma code{padding:0;border:0;border-radius:0;font-size:inherit}`)
+	style := styles.Get(settings.SyntaxTheme)
+	if style == nil {
+		panic(fmt.Sprintf("didn't find style %q", settings.SyntaxTheme))
+	}
+	if err := formatter.WriteCSS(&buf, style); err != nil {
+		panic(err)
 	}
 	return buf.String()
 }

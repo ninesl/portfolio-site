@@ -1,53 +1,22 @@
-@font-face {
-	font-family: "Young Serif";
-	src: url("/assets/fonts/YoungSerif-Regular.ttf") format("truetype");
-	font-display: swap;
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	min-height: 5rem;
 }
 
-@font-face {
-	font-family: "Bree Serif";
-	src: url("/assets/fonts/BreeSerif-Regular.ttf") format("truetype");
-	font-display: swap;
+main > h1:first-child {
+	margin-bottom: 0;
 }
 
-[data-font="young-serif"] {
-	font-family: "Young Serif", serif;
-}
-
-[data-font="bree-serif"] {
-	font-family: "Bree Serif", serif;
+.article-date {
+	margin-top: 0.25rem;
 }
 
 .counter-shell {
 	display: flex;
-	justify-content: center;
-}
-
-.font-toggle,
-.code-font-toggle,
-.syntax-theme-toggle {
-	display: flex;
-	gap: 0.5rem;
-	justify-content: center;
-	margin: 1rem 0;
-}
-
-.font-toggle button,
-.code-font-toggle button,
-.syntax-theme-toggle button {
-	border: 1px solid currentColor;
-	border-radius: 999px;
-	background: transparent;
-	color: inherit;
-	cursor: pointer;
-	padding: 0.35rem 0.75rem;
-}
-
-.font-toggle button[aria-pressed="true"],
-.code-font-toggle button[aria-pressed="true"],
-.syntax-theme-toggle button[aria-pressed="true"] {
-	background: #111;
-	color: #fff;
+	justify-content: flex-end;
 }
 
 .counter-wrap {
@@ -60,6 +29,9 @@
 }
 
 .counter-button {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
 	background: none;
 	border: 0;
 	padding: 0;
@@ -68,27 +40,28 @@
 	cursor: pointer;
 }
 
-.counter-button h1 {
+.counter-total {
+	display: flex;
+	align-items: baseline;
+	gap: 0.1rem;
+}
+
+.counter-total h1 {
 	margin: 0;
 }
 
 .powered-by {
-	position: absolute;
-	left: 50%;
-	top: 100%;
-	transform: translate(-50%, -0.35rem);
 	opacity: 1;
 	pointer-events: none;
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	text-align: center;
+	align-items: flex-end;
+	text-align: right;
 	white-space: nowrap;
 }
 
 .overclicked .powered-by {
-	width: 80vw;
+	width: min(80vw, 20rem);
 	overflow-wrap: anywhere;
 	white-space: normal;
 }
@@ -138,10 +111,10 @@
 
 @keyframes powered-by-spin {
 	0% {
-		transform: translate(-50%, -0.35rem) rotate(0deg);
+		transform: rotate(0deg);
 	}
 
 	100% {
-		transform: translate(-50%, -0.35rem) rotate(360deg);
+		transform: rotate(360deg);
 	}
 }

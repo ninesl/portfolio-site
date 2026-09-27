@@ -14,6 +14,8 @@ import (
 	"github.com/ninesl/portfolio-site/pages"
 )
 
+const blogPath = "./blog/"
+
 var (
 	//go:embed assets
 	embeddedFiles embed.FS
@@ -23,7 +25,7 @@ var (
 	assetHandler http.Handler
 
 	pageConfig = &pages.LayoutConfig{
-		Title: "Lance Nines - ninescoding",
+		Title: "ninescoding",
 	}
 )
 
@@ -75,30 +77,22 @@ func getPort() int {
 }
 
 func main() {
-	blog := initBlog("./blog/")
+	blog := initBlog(blogPath)
 	port := getPort()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /assets/{path...}", serveAsset)
-	mux.HandleFunc("GET /blog/{article}", func(w http.ResponseWriter, r *http.Request) {
-		c, err := blog.ArticleHTML(r.PathValue("article"))
-		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-		if r.Header.Get("HX-Request") == "true" {
-			renderComponent(c, w, r)
-			return
-		}
-		renderComponent(pages.Layout(c, *pageConfig), w, r)
-	})
+	mux.HandleFunc("GET /blog/{article...}", handleServeBlogPost(blog))
+	mux.HandleFunc("GET /{slug}", handleServeBlogSlug(blog))
 	mux.HandleFunc("POST /count", func(w http.ResponseWriter, r *http.Request) {
 		pageConfig.COUNT++
 		renderComponent(pages.PersistCounter(pageConfig.COUNT, true), w, r)
 	})
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		renderComponent(pages.Layout(pages.BlogHome(blog.ArticleTitles()), *pageConfig), w, r)
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		renderComponent(pages.Layout(pages.BlogHome(blog.Entries()), *pageConfig, r.URL.Path), w, r)
 	})
+	mux.HandleFunc("GET /", renderNotFound)
+
 	log.Println("listening on ", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), addMiddleware(mux)))
 }

@@ -1,0 +1,13 @@
+services:
+  ebiten-wasm:
+    image: gcr.io/distroless/base-debian12
+    working_dir: /app
+    command: ./serveWasms
+    environment:
+      PORT: "6666"
+    ports:
+      - ":8080"
+    volumes:
+      - ./serveWasms:/app/serveWasms:ro
+      - ./wasms:/app/wasms:ro
+    restart: unless-stopped

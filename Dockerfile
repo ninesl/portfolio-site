@@ -1,10 +1,11 @@
-FROM golang:1.26-alpine AS builder
+FROM golang:1.27.1-alpine AS builder
 
 WORKDIR /app
 
-COPY . .
-
+COPY go.mod go.sum .
 RUN go mod download
+
+COPY . .
 
 RUN go tool templ generate
 
