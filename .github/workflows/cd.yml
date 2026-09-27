@@ -30,16 +30,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set article modification times from Git addition dates
-        working-directory: blog
-        run: |
-          git ls-files -z '*.md' | while IFS= read -r -d '' file; do
-            read -r timestamp < <(git log --reverse --diff-filter=A --format=%ct -- "$file")
-            touch -d "@$timestamp" -- "$file"
-          done
-
       - name: Remove Git metadata
-        run: rm -rf .git blog/.git
+        run: rm -rf .git
 
       - name: Build, publish, and deploy
         env:

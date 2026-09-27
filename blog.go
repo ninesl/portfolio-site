@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -65,6 +67,7 @@ type Blog struct {
 	slugs     map[string]templ.Component
 	ambiguous map[string]bool
 	entries   []pages.BlogEntry
+	gitRoot   string
 }
 
 // used in main()
@@ -77,14 +80,15 @@ func initBlog(path string) *Blog {
 }
 
 func NewBlog(path string) (*Blog, error) {
-	return newBlog(os.DirFS(path))
+	return newBlog(os.DirFS(path), path)
 }
 
-func newBlog(blogFS fs.FS) (*Blog, error) {
+func newBlog(blogFS fs.FS, gitRoot string) (*Blog, error) {
 	b := &Blog{
 		articles:  make(map[string]templ.Component),
 		slugs:     make(map[string]templ.Component),
 		ambiguous: make(map[string]bool),
+		gitRoot:   gitRoot,
 	}
 	entries, err := b.readEntries(blogFS, ".", "")
 	if err != nil {
@@ -128,6 +132,9 @@ func (b *Blog) readEntries(blogFS fs.FS, dir, parent string) ([]pages.BlogEntry,
 	items := make([]datedEntry, 0, len(blogEntries))
 	for _, entry := range blogEntries {
 		name := entry.Name()
+		if name == ".git" {
+			continue
+		}
 		if entry.IsDir() {
 			title := formatBlogName(name)
 			children, err := b.readEntries(blogFS, path.Join(dir, name), path.Join(parent, title))
@@ -146,11 +153,17 @@ func (b *Blog) readEntries(blogFS fs.FS, dir, parent string) ([]pages.BlogEntry,
 		if _, exists := b.articles[articlePath]; exists {
 			return nil, errors.New("duplicate formatted blog path: " + articlePath)
 		}
-		component, err := convertMDToHTML(blogFS, path.Join(dir, base))
+		info, err := entry.Info()
 		if err != nil {
 			return nil, err
 		}
-		info, err := entry.Info()
+		updated := info.ModTime()
+		if b.gitRoot != "" {
+			if added, ok := gitAdditionDate(b.gitRoot, path.Join(dir, name)); ok {
+				updated = added
+			}
+		}
+		component, err := convertMDToHTML(blogFS, path.Join(dir, base), updated)
 		if err != nil {
 			return nil, err
 		}
@@ -162,7 +175,7 @@ func (b *Blog) readEntries(blogFS fs.FS, dir, parent string) ([]pages.BlogEntry,
 		} else if !b.ambiguous[slug] {
 			b.slugs[slug] = component
 		}
-		items = append(items, datedEntry{entry: pages.BlogEntry{Title: title, Path: articlePath}, updated: info.ModTime()})
+		items = append(items, datedEntry{entry: pages.BlogEntry{Title: title, Path: articlePath}, updated: updated})
 	}
 	sort.Slice(items, func(i, j int) bool {
 		a, b := items[i], items[j]
@@ -181,18 +194,28 @@ func (b *Blog) readEntries(blogFS fs.FS, dir, parent string) ([]pages.BlogEntry,
 	return entries, nil
 }
 
-func convertMDToHTML(blogFS fs.FS, blogName string) (templ.Component, error) {
+// Git doesn't track filesystem modification times. Use the first commit that
+// added the file, falling back to its mtime for articles outside a Git checkout.
+func gitAdditionDate(gitRoot, filename string) (time.Time, bool) {
+	output, err := exec.Command("git", "-C", gitRoot, "log", "--reverse", "--diff-filter=A", "--format=%ct", "--", filename).Output()
+	if err != nil {
+		return time.Time{}, false
+	}
+	first, _, _ := strings.Cut(strings.TrimSpace(string(output)), "\n")
+	seconds, err := strconv.ParseInt(first, 10, 64)
+	if err != nil {
+		return time.Time{}, false
+	}
+	return time.Unix(seconds, 0), true
+}
+
+func convertMDToHTML(blogFS fs.FS, blogName string, date time.Time) (templ.Component, error) {
 	mdBytes, err := fs.ReadFile(blogFS, blogName+".md")
 	if err != nil {
 		return nil, err
 	}
-	fileInfo, err := fs.Stat(blogFS, blogName+".md")
-	if err != nil {
-		return nil, err
-	}
 
-	date := fileInfo.ModTime().Format("January 2, 2006")
-	mdBytes = append([]byte("# "+formatBlogName(path.Base(blogName))+"\n\n<p class=\"article-date\"><small><em>"+date+"</em></small></p>\n\n"), mdBytes...)
+	mdBytes = append([]byte("# "+formatBlogName(path.Base(blogName))+"\n\n<p class=\"article-date\"><small><em>"+date.Format("January 2, 2006")+"</em></small></p>\n\n"), mdBytes...)
 
 	html, err := renderMarkdown(mdBytes)
 	if err != nil {
