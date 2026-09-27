@@ -1,3 +1,8 @@
+# ninescoding
+
+`.github/workflows/cd.yml`:
+
+```yaml
 name: Deploy production
 
 on:
@@ -46,3 +51,4 @@ jobs:
             --deploy-directory="prod/$APPLICATION_NAME" \
             --deploy-container-runtime=podman \
             --deploy-values="$DEPLOY_VALUES"
+```

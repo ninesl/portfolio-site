@@ -2,3 +2,4 @@
 blogs/
 tmp/
 *.md
+!README.md
