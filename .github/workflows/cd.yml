@@ -31,12 +31,14 @@ jobs:
       - name: Read current lifetime clicks
         id: clicks
         run: |
-          count=$(curl -fsSL --max-time 15 https://ninescoding.com/count) || true
+          count=$(curl -fsSL --max-time 1 https://ninescoding.com/count) || true
           echo "count=${count:-0}" >> "$GITHUB_OUTPUT"
 
       - name: Build, publish, and deploy
         env:
-          DEPLOY_VALUES: APP_IMAGE=${{ env.DEPLOY_IMAGE }},INITIAL_COUNT=${{ steps.clicks.outputs.count }}
+          DEPLOY_VALUES: |
+            APP_IMAGE=${{ env.DEPLOY_IMAGE }}
+            INITIAL_COUNT=${{ steps.clicks.outputs.count }}
         run: |
           "$HOME/.local/bin/dagger" -W github.com/ninesl/daggerer@master api call \
             release \
@@ -52,3 +54,13 @@ jobs:
             --deploy-directory="prod/$APPLICATION_NAME" \
             --deploy-container-runtime=podman \
             --deploy-values="$DEPLOY_VALUES"
+
+      - name: Verify lifetime clicks after deploy
+        env:
+          EXPECTED_COUNT: ${{ steps.clicks.outputs.count }}
+        run: |
+          actual=$(curl -fsSL --max-time 1 https://ninescoding.com/count)
+          if [[ "$actual" != "$EXPECTED_COUNT" ]]; then
+            echo "Expected lifetime clicks $EXPECTED_COUNT, got $actual" >&2
+            exit 1
+          fi
