@@ -23,6 +23,13 @@ templ Layout(content templ.Component, config LayoutConfig, currentPath string) {
 		<body>
 			<header>
 				@headerHomeLink(currentPath)
+				<div class="header-profile">
+					<div>Lance Nines</div>
+					<div>
+						<a href="https://github.com/ninesl" target="_blank">github</a> |
+						<a href="https://www.linkedin.com/in/lance-nines/" target="_blank">linkedin</a>
+					</div>
+				</div>
 				@PersistCounter(config.COUNT, false)
 			</header>
 			<main>

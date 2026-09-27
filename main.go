@@ -14,14 +14,12 @@ import (
 	"github.com/ninesl/portfolio-site/pages"
 )
 
-const blogPath = "./articles/"
+const blogPath = "./articles"
 
 var (
 	//go:embed assets
 	embeddedFiles embed.FS
 
-	////go:embed blog
-	//embeddedBlog embed.FS
 	assetHandler http.Handler
 
 	pageConfig = &pages.LayoutConfig{
@@ -79,11 +77,21 @@ func getPort() int {
 func main() {
 	blog := initBlog(blogPath)
 	port := getPort()
+	if initialCount := os.Getenv("INITIAL_COUNT"); initialCount != "" {
+		count, err := strconv.Atoi(initialCount)
+		if err != nil || count < 0 {
+			log.Fatalf("invalid INITIAL_COUNT %q: must be a non-negative integer", initialCount)
+		}
+		pageConfig.COUNT = count
+	}
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /assets/{path...}", serveAsset)
 	mux.HandleFunc("GET /blog/{article...}", handleServeBlogPost(blog))
 	mux.HandleFunc("GET /{slug}", handleServeBlogSlug(blog))
+	mux.HandleFunc("GET /count", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, pageConfig.COUNT)
+	})
 	mux.HandleFunc("POST /count", func(w http.ResponseWriter, r *http.Request) {
 		pageConfig.COUNT++
 		renderComponent(pages.PersistCounter(pageConfig.COUNT, true), w, r)

@@ -1,5 +1,5 @@
 *_templ.go
-blogs/
+/articles
 tmp/
 *.md
 !README.md

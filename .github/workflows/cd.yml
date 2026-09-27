@@ -28,9 +28,15 @@ jobs:
       - name: Sync production compose file
         run: rsync -a compose.yml "$HOME/prod/$APPLICATION_NAME/compose.yml"
 
+      - name: Read current lifetime clicks
+        id: clicks
+        run: |
+          count=$(curl -fsSL --max-time 15 https://ninescoding.com/count) || true
+          echo "count=${count:-0}" >> "$GITHUB_OUTPUT"
+
       - name: Build, publish, and deploy
         env:
-          DEPLOY_VALUES: APP_IMAGE=${{ env.DEPLOY_IMAGE }}
+          DEPLOY_VALUES: APP_IMAGE=${{ env.DEPLOY_IMAGE }},INITIAL_COUNT=${{ steps.clicks.outputs.count }}
         run: |
           "$HOME/.local/bin/dagger" -W github.com/ninesl/daggerer@master api call \
             release \
