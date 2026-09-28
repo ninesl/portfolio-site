@@ -1,5 +1,12 @@
 body {
 	font-size: 125%;
+	background-color: #161d27;
+	color: #f5f6f8;
+}
+
+a {
+	color: #8bcbff;
+	text-decoration: none;
 }
 
 header {
