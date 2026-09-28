@@ -77,7 +77,7 @@ templ BlogHomeFragment(entries []BlogEntry) {
 }
 
 templ blogEntries(entries []BlogEntry) {
-	<ul>
+	<ul class="blog-entries">
 		for _, entry := range entries {
 			<li>
 				if entry.Folder {
@@ -85,12 +85,12 @@ templ blogEntries(entries []BlogEntry) {
 					@blogEntries(entry.Children)
 				} else {
 					<a
-						href={ "/blog/" + entry.Path }
+						href={ "/" + ArticleSlug(entry.Title) }
 						hx-get={ "/blog/" + entry.Path }
 						hx-preload="mouseover"
 						hx-target="main"
 						hx-swap="innerHTML"
-						hx-push-url={ ArticleSlug(entry.Title) }
+						hx-push-url={ "/" + ArticleSlug(entry.Title) }
 					>{ entry.Title }</a>
 				}
 			</li>

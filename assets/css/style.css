@@ -9,6 +9,21 @@ a {
 	text-decoration: none;
 }
 
+a:visited {
+	color: #c5a7f7;
+}
+
+main {
+	width: 80%;
+	margin-inline: auto;
+}
+
+.blog-entries {
+	list-style: none;
+	padding-left: 0;
+	text-align: center;
+}
+
 header {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
