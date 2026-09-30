@@ -18,6 +18,12 @@ main {
 	margin-inline: auto;
 }
 
+@media (min-width: 1200px) {
+	main {
+		width: 50%;
+	}
+}
+
 .blog-entries {
 	list-style: none;
 	padding-left: 0;
